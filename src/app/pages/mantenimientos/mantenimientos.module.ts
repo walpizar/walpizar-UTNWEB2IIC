@@ -7,6 +7,7 @@ import { ClientesComponent } from './clientes/clientes.component';
 import { ProductosComponent } from './productos/productos.component';
 import { MaterialModule } from 'src/app/material.module';
 import { AdminProductosComponent } from './productos/admin-productos/admin-productos.component';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,11 @@ import { AdminProductosComponent } from './productos/admin-productos/admin-produ
     ProductosComponent,
     AdminProductosComponent,
   ],
-  imports: [CommonModule, MantenimientosRoutingModule, MaterialModule],
+  imports: [
+    ReactiveFormsModule,
+    CommonModule,
+    MantenimientosRoutingModule,
+    MaterialModule,
+  ],
 })
 export class MantenimientosModule {}

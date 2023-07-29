@@ -36,8 +36,15 @@ export class ProductosComponent {
     alert('modificar');
   }
 
-  eliminar(): void {
-    alert('eliminar');
+  eliminar(id: number): void {
+    this.srvProductos.eliminar(id).subscribe(
+      (dato) => {
+        alert('Se eliminó el producto');
+      },
+      (err) => {
+        alert('Error al eliminar');
+      }
+    );
   }
 
   detalle(dato: Productos): void {
@@ -46,7 +53,11 @@ export class ProductosComponent {
 
   abrirDialog(producto?: Productos): void {
     if (producto) {
-      alert('modificando');
+      this.dialog.open(AdminProductosComponent, {
+        width: '700px',
+        height: '700px',
+        data: { producto },
+      });
     } else {
       this.dialog.open(AdminProductosComponent, {
         width: '700px',

@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
-import { AppDataSource } from "../data-source";
-import { Producto } from "../entity/Producto";
-import { validate } from "class-validator";
+import { Request, Response } from 'express';
+import { AppDataSource } from '../data-source';
+import { Producto } from '../entity/Producto';
+import { validate } from 'class-validator';
+import { CategoriaProducto } from '../entity/CategoriaProducto';
 
 class ProductosController {
   static getAll = async (req: Request, resp: Response) => {
@@ -10,10 +11,11 @@ class ProductosController {
 
       const listaProductos = await productosRepo.find({
         where: { estado: true },
+        relations: { categoria: true },
       });
 
       if (listaProductos.length == 0) {
-        return resp.status(404).json({ mensaje: "No se encontró resultados." });
+        return resp.status(404).json({ mensaje: 'No se encontró resultados.' });
       }
       return resp.status(200).json(listaProductos);
     } catch (error) {
@@ -23,10 +25,10 @@ class ProductosController {
 
   static getById = async (req: Request, resp: Response) => {
     try {
-      const id = parseInt(req.params["id"]);
+      const id = parseInt(req.params['id']);
 
       if (!id) {
-        return resp.status(404).json({ mensaje: "No se indica el ID" });
+        return resp.status(404).json({ mensaje: 'No se indica el ID' });
       }
 
       const productosRepo = AppDataSource.getRepository(Producto);
@@ -35,11 +37,12 @@ class ProductosController {
       try {
         producto = await productosRepo.findOneOrFail({
           where: { id, estado: true },
+          relations: { categoria: true },
         });
       } catch (error) {
         return resp
           .status(404)
-          .json({ mensaje: "No se encontro el producto con ese ID" });
+          .json({ mensaje: 'No se encontro el producto con ese ID' });
       }
 
       return resp.status(200).json(producto);
@@ -51,34 +54,39 @@ class ProductosController {
   static add = async (req: Request, resp: Response) => {
     try {
       //DESTRUCTURING
-      const { id, nombre, precio, stock, fechaIngreso } = req.body;
+      const { id, nombre, precio, stock, categoria, fechaIngreso } = req.body;
 
       //validacion de datos de entrada
       if (!id) {
-        return resp.status(404).json({ mensaje: "Debe indicar el ID" });
+        return resp.status(404).json({ mensaje: 'Debe indicar el ID' });
       }
       if (!nombre) {
         return resp
           .status(404)
-          .json({ mensaje: "Debe indicar el nombre del producto" });
+          .json({ mensaje: 'Debe indicar el nombre del producto' });
+      }
+      if (categoria) {
+        return resp
+          .status(404)
+          .json({ mensaje: 'Debe indicar la categoria del producto' });
       }
       if (!precio) {
-        return resp.status(404).json({ mensaje: "Debe indicar el precio" });
+        return resp.status(404).json({ mensaje: 'Debe indicar el precio' });
       }
       if (precio < 0) {
         return resp
           .status(404)
-          .json({ mensaje: "Debe indicar un precio mayor que 0" });
+          .json({ mensaje: 'Debe indicar un precio mayor que 0' });
       }
       if (!stock) {
         return resp
           .status(404)
-          .json({ mensaje: "Debe indicar el stock del producto" });
+          .json({ mensaje: 'Debe indicar el stock del producto' });
       }
       if (stock < 0) {
         return resp
           .status(404)
-          .json({ mensaje: "El stock debe ser mayor que ser" });
+          .json({ mensaje: 'El stock debe ser mayor que ser' });
       }
 
       //validacion de reglas de negocio
@@ -88,7 +96,7 @@ class ProductosController {
       if (pro) {
         return resp
           .status(404)
-          .json({ mensaje: "El producto ya existe en la base datos." });
+          .json({ mensaje: 'El producto ya existe en la base datos.' });
       }
 
       const fecha = new Date();
@@ -100,6 +108,7 @@ class ProductosController {
       producto.stock = stock;
       producto.fechaIngreso = fecha;
       producto.estado = true;
+      producto.categoria = categoria;
 
       //validar con class validator
       const errors = await validate(producto, {
@@ -111,55 +120,70 @@ class ProductosController {
       }
 
       await productosRepo.save(producto);
-      return resp.status(201).json({ mensaje: "Producto creado" });
+      return resp.status(201).json({ mensaje: 'Producto creado' });
     } catch (error) {
       return resp.status(400).json({ mensaje: error });
     }
   };
 
   static update = async (req: Request, resp: Response) => {
-    const { id, nombre, precio, stock, fechaIngreso } = req.body;
-
+    const { id, nombre, precio, stock, fechaIngreso, categoria } = req.body;
+    console.log('api');
+    console.log(categoria);
     //validacion de datos de entrada
     if (!id) {
-      return resp.status(404).json({ mensaje: "Debe indicar el ID" });
+      return resp.status(404).json({ mensaje: 'Debe indicar el ID' });
     }
     if (!nombre) {
       return resp
         .status(404)
-        .json({ mensaje: "Debe indicar el nombre del producto" });
+        .json({ mensaje: 'Debe indicar el nombre del producto' });
     }
     if (!precio) {
-      return resp.status(404).json({ mensaje: "Debe indicar el precio" });
+      return resp.status(404).json({ mensaje: 'Debe indicar el precio' });
+    }
+    if (!categoria) {
+      return resp
+        .status(404)
+        .json({ mensaje: 'Debe indicar la categoria del producto' });
     }
     if (precio < 0) {
       return resp
         .status(404)
-        .json({ mensaje: "Debe indicar un precio mayor que 0" });
+        .json({ mensaje: 'Debe indicar un precio mayor que 0' });
     }
     if (!stock) {
       return resp
         .status(404)
-        .json({ mensaje: "Debe indicar el stock del producto" });
+        .json({ mensaje: 'Debe indicar el stock del producto' });
     }
     if (stock < 0) {
       return resp
         .status(404)
-        .json({ mensaje: "El stock debe ser mayor que ser" });
+        .json({ mensaje: 'El stock debe ser mayor que ser' });
     }
 
     //validacion de reglas de negocio
     const productosRepo = AppDataSource.getRepository(Producto);
+    const categoriaRepo = AppDataSource.getRepository(CategoriaProducto);
     let pro: Producto;
+    let cat: CategoriaProducto;
     try {
       pro = await productosRepo.findOneOrFail({ where: { id } });
     } catch (error) {
-      return resp.status(404).json({ mensaje: "No existe el producto." });
+      return resp.status(404).json({ mensaje: 'No existe el producto.' });
+    }
+
+    try {
+      cat = await categoriaRepo.findOneOrFail({ where: { id: categoria } });
+    } catch (error) {
+      return resp.status(404).json({ mensaje: 'No existe la categoria.' });
     }
 
     pro.nombre = nombre;
     pro.precio = precio;
     pro.stock = stock;
+    pro.categoria = cat;
     // pro.fechaIngreso
 
     //validar con class validator
@@ -173,16 +197,16 @@ class ProductosController {
 
     try {
       await productosRepo.save(pro);
-      return resp.status(200).json({ mensaje: "Se guardo correctamente" });
+      return resp.status(200).json({ mensaje: 'Se guardo correctamente' });
     } catch (error) {
-      return resp.status(400).json({ mensaje: "No pudo guardar." });
+      return resp.status(400).json({ mensaje: 'No pudo guardar.' });
     }
   };
   static delete = async (req: Request, resp: Response) => {
     try {
-      const id = parseInt(req.params["id"]);
+      const id = parseInt(req.params['id']);
       if (!id) {
-        return resp.status(404).json({ mensaje: "Debe indicar el ID" });
+        return resp.status(404).json({ mensaje: 'Debe indicar el ID' });
       }
 
       const productosRepo = AppDataSource.getRepository(Producto);
@@ -194,18 +218,18 @@ class ProductosController {
       } catch (error) {
         return resp
           .status(404)
-          .json({ mensaje: "No se encuentra el producto con ese ID" });
+          .json({ mensaje: 'No se encuentra el producto con ese ID' });
       }
 
       pro.estado = false;
       try {
         await productosRepo.save(pro);
-        return resp.status(200).json({ mensaje: "Se eliminó correctamente" });
+        return resp.status(200).json({ mensaje: 'Se eliminó correctamente' });
       } catch (error) {
-        return resp.status(400).json({ mensaje: "No se pudo eliminar." });
+        return resp.status(400).json({ mensaje: 'No se pudo eliminar.' });
       }
     } catch (error) {
-      return resp.status(400).json({ mensaje: "No se pudo eliminar" });
+      return resp.status(400).json({ mensaje: 'No se pudo eliminar' });
     }
   };
 }

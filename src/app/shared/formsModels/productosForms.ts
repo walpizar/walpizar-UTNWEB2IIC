@@ -12,6 +12,7 @@ export class ProductosForm {
       stock: [0, [Validators.required]],
       fechaIngreso: [Date.now, [Validators.required]],
       estado: [true],
+      categoria: [1, [Validators.required]],
     });
   }
 }

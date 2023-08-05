@@ -11,6 +11,18 @@
   </mat-form-field>
 
   <mat-form-field>
+    <mat-label>Categoria</mat-label>
+    <mat-select formControlName="categoria">
+      <mat-option
+        *ngFor="let categoria of listaCategorias"
+        [value]="categoria.id"
+      >
+        {{ categoria.nombre }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field>
     <mat-label>Precio</mat-label>
     <input type="number" matInput formControlName="precio" />
   </mat-form-field>

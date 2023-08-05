@@ -5,7 +5,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
-
+import { MatSelectModule } from '@angular/material/select';
 const lista = [
   MatButtonModule,
   MatCardModule,
@@ -13,6 +13,7 @@ const lista = [
   MatInputModule,
   MatFormFieldModule,
   MatDialogModule,
+  MatSelectModule,
 ];
 
 @NgModule({

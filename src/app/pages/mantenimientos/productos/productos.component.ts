@@ -4,6 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Productos } from 'src/app/shared/models/productos';
 import { ProductosService } from 'src/app/shared/services/productos.service';
 import { AdminProductosComponent } from './admin-productos/admin-productos.component';
+import { ToastrService } from 'ngx-toastr';
 
 // const ELEMENT_DATA: Productos[] = [];
 
@@ -13,18 +14,31 @@ import { AdminProductosComponent } from './admin-productos/admin-productos.compo
   styleUrls: ['./productos.component.scss'],
 })
 export class ProductosComponent {
-  displayedColumns: string[] = ['id', 'nombre', 'precio', 'acciones'];
+  displayedColumns: string[] = [
+    'id',
+    'nombre',
+    'categoria',
+    'precio',
+    'acciones',
+  ];
 
   dataSource = new MatTableDataSource();
 
   constructor(
     private srvProductos: ProductosService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private mensajeria: ToastrService
   ) {}
   ngOnInit() {
-    this.srvProductos.getAll().subscribe((datos) => {
-      this.dataSource.data = datos;
-    });
+    this.srvProductos.getAll().subscribe(
+      (datos) => {
+        // console.log(datos);
+        this.dataSource.data = datos;
+      },
+      (error) => {
+        this.mensajeria.error(error);
+      }
+    );
   }
 
   applyFilter(event: Event) {

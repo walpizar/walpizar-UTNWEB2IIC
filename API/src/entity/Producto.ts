@@ -16,7 +16,7 @@ export class Producto {
   id: number;
 
   @Column({ length: 50 })
-  @MaxLength(3, { message: 'Debe ser menos de 50 caracteres' })
+  @MaxLength(50, { message: 'Debe ser menos de 50 caracteres' })
   @IsNotEmpty()
   nombre: string;
 

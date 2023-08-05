@@ -1,10 +1,11 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, Pipe } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ProductosForm } from 'src/app/shared/formsModels/productosForms';
 import { ProductosService } from 'src/app/shared/services/productos.service';
 import { ToastrService } from 'ngx-toastr';
 import { CategoriasService } from 'src/app/shared/services/categorias.service';
 import { Categoria } from 'src/app/shared/models/categoria';
+import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-admin-productos',
@@ -43,13 +44,18 @@ export class AdminProductosComponent {
   }
 
   cargarDatosForm() {
-    console.log(this.data.producto);
+    console.log(this.data.producto.fechaIngreso);
+
     this.productoForm.baseForm.patchValue({
       id: this.data.producto.id,
       nombre: this.data.producto.nombre,
       precio: this.data.producto.precio,
       stock: this.data.producto.stock,
-      fechaIngreso: this.data.producto.fechaIngreso,
+      fechaIngreso: formatDate(
+        this.data.producto.fechaIngreso,
+        'yyyy-MM-dd',
+        'en'
+      ),
       estado: true,
       categoria: this.data.producto.categoria.id,
     });

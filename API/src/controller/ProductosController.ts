@@ -128,7 +128,7 @@ class ProductosController {
 
   static update = async (req: Request, resp: Response) => {
     const { id, nombre, precio, stock, fechaIngreso, categoria } = req.body;
-    console.log('api');
+
     console.log(categoria);
     //validacion de datos de entrada
     if (!id) {

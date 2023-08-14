@@ -65,7 +65,7 @@ class ProductosController {
           .status(404)
           .json({ mensaje: 'Debe indicar el nombre del producto' });
       }
-      if (categoria) {
+      if (!categoria) {
         return resp
           .status(404)
           .json({ mensaje: 'Debe indicar la categoria del producto' });
@@ -91,12 +91,21 @@ class ProductosController {
 
       //validacion de reglas de negocio
       const productosRepo = AppDataSource.getRepository(Producto);
+      const categoriaRepo = AppDataSource.getRepository(CategoriaProducto);
+
+      let cat: CategoriaProducto;
       const pro = await productosRepo.findOne({ where: { id } });
 
       if (pro) {
         return resp
           .status(404)
           .json({ mensaje: 'El producto ya existe en la base datos.' });
+      }
+
+      try {
+        cat = await categoriaRepo.findOneOrFail({ where: { id: categoria } });
+      } catch (error) {
+        return resp.status(404).json({ mensaje: 'No existe la categoria.' });
       }
 
       const fecha = new Date();
@@ -108,7 +117,7 @@ class ProductosController {
       producto.stock = stock;
       producto.fechaIngreso = fecha;
       producto.estado = true;
-      producto.categoria = categoria;
+      producto.categoria = cat;
 
       //validar con class validator
       const errors = await validate(producto, {
@@ -129,7 +138,6 @@ class ProductosController {
   static update = async (req: Request, resp: Response) => {
     const { id, nombre, precio, stock, fechaIngreso, categoria } = req.body;
 
-    console.log(categoria);
     //validacion de datos de entrada
     if (!id) {
       return resp.status(404).json({ mensaje: 'Debe indicar el ID' });
